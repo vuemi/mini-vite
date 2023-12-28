@@ -1,0 +1,27 @@
+{
+  "name": "jvite",
+  "version": "1.0.0",
+  "description": "极简版 Vite：帮助你了解 Vite 的实现原理",
+  "type": "module",
+  "bin": {
+    "jvite": "jvite.js"
+  },
+  "scripts": {
+    "dev": "nodemon jvite.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "justorez <alonezero@foxmail.com>",
+  "license": "MIT",
+  "repository": "git@github.com:justorez/jvite.git",
+  "private": true,
+  "dependencies": {
+    "@vue/compiler-dom": "^3.3.13",
+    "@vue/compiler-sfc": "^3.3.13",
+    "koa": "^2.14.2",
+    "vue": "^3.3.13"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
