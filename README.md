@@ -8,5 +8,6 @@
 - Vue 单文件组件 ( template & style )
 - 支持 Vue 单文件组件中导入图片
 - public 静态文件目录
+- 支持 pnpm 项目
 
-注意: *暂不支持 pnpm 项目。*
+注意: *暂不支持 setup-script。*

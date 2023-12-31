@@ -2,16 +2,31 @@ import path from 'node:path'
 import fs from 'node:fs'
 import { Readable } from 'node:stream'
 import Koa from 'koa'
+import YAML from 'yaml'
 import compilerSFC from '@vue/compiler-sfc'
 
 const root = process.cwd()
 const p = (...args) => path.join(root, ...args)
-const streamToString = (stream, encoding = 'utf8') => new Promise((resolve, reject) => {
-    const chunks = []
-    stream.on('data', chunk => chunks.push(chunk))
-    stream.on('end', () => resolve(Buffer.concat(chunks).toString(encoding)))
-    stream.on('error', reject)
-})
+
+const PNPM_PACKAGES = (() => {
+    const filePath = p('pnpm-lock.yaml')
+    if (fs.existsSync(filePath)) {
+        const yaml = YAML.parse(fs.readFileSync(filePath, 'utf8'))
+        return Object.keys(yaml.packages)
+    }
+    return
+})()
+
+const streamToString = (stream, encoding = 'utf8') => {
+    return new Promise((resolve, reject) => {
+        const chunks = []
+        stream.on('data', (chunk) => chunks.push(chunk))
+        stream.on('end', () =>
+            resolve(Buffer.concat(chunks).toString(encoding))
+        )
+        stream.on('error', reject)
+    })
+}
 const stringToStream = (text) => {
     const stream = new Readable()
     stream.push(text)
@@ -24,7 +39,22 @@ const app = new Koa()
 // 3. 加载第三方模块
 app.use(async (ctx, next) => {
     if (ctx.path.startsWith('/@modules/')) {
-        const moduleName = ctx.path.substring(10)
+        let moduleName = ctx.path.substring(10)
+
+        // 处理 pnpm 项目
+        if (PNPM_PACKAGES) {
+            const re = new RegExp(`^/${moduleName}`)
+            const packageName = PNPM_PACKAGES
+                .find((name) => re.test(name))
+                .slice(1)
+                .split('/')
+                .join('+')
+                .replace('(', '_')
+                .replace(')', '')
+            // console.log(packageName, moduleName)
+            moduleName = path.join('.pnpm', packageName, 'node_modules', moduleName)
+        }
+
         const pkgPath = p('node_modules', moduleName, 'package.json')
         const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'))
         ctx.path = `/node_modules/${moduleName}/${pkg.module}`
@@ -50,7 +80,7 @@ app.use(async (ctx, next) => {
         ctx.status = 404
         return
     }
-    
+
     ctx.type = path.extname(urlPath)
     ctx.body = fs.createReadStream(filePath)
     await next() // 调用下一个中间件
@@ -66,22 +96,21 @@ app.use(async (ctx, next) => {
         if (!ctx.query.type) {
             code = descriptor.script.content
             code = code.replace(/export\s+default\s+/g, 'const __script = ')
-            code += `import { render as __render } from "${ctx.path}?type=template"\n` +
+            code +=
+                `import { render as __render } from "${ctx.path}?type=template"\n` +
                 `import "${ctx.path}?type=style"\n` +
                 `__script.render = __render\n` +
                 `export default __script`
             ctx.type = 'js'
-        } 
-        else if (ctx.query.type === 'template') {
-            const templateRender = compilerSFC.compileTemplate({ 
+        } else if (ctx.query.type === 'template') {
+            const templateRender = compilerSFC.compileTemplate({
                 source: descriptor.template.content,
                 id: ctx.path
             })
             code = templateRender.code
             ctx.type = 'js'
-        }
-        else if (ctx.query.type === 'style') {
-            code = descriptor.styles.map(style => style.content).join('')
+        } else if (ctx.query.type === 'style') {
+            code = descriptor.styles.map((style) => style.content).join('')
             ctx.type = 'css'
         }
         ctx.body = code
@@ -116,7 +145,8 @@ app.use(async (ctx, next) => {
         let content = typeof ctx.body === 'string'
             ? ctx.body
             : await streamToString(ctx.body)
-        content = `const css = "${content.replace(/\n/g, '')}"\n` +
+        content =
+            `const css = "${content.replace(/\n/g, '')}"\n` +
             `const styleEl = document.createElement('style')\n` +
             `styleEl.setAttribute('type', 'text/css')\n` +
             `styleEl.innerHTML = css\n` +

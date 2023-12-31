@@ -16,10 +16,10 @@
   "repository": "git@github.com:justorez/jvite.git",
   "private": true,
   "dependencies": {
-    "@vue/compiler-dom": "^3.3.13",
     "@vue/compiler-sfc": "^3.3.13",
     "koa": "^2.14.2",
-    "vue": "^3.3.13"
+    "vue": "^3.3.13",
+    "yaml": "^2.3.4"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"

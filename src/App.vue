@@ -1,4 +1,4 @@
-<!-- 简化版的 jvite 暂不支持 setup-script -->
+<!-- 暂不支持 setup-script -->
 <script>
 import HelloWorld from './components/HelloWorld.vue'
 
