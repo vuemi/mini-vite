@@ -119,8 +119,9 @@ app.use(async (ctx, next) => {
 })
 
 // 2. 修改第三方模块的路径
-// 最新版本的 vite 会在服务启动前将模块路径预处理好
-// 该项目是简化版的实现方式
+// 最新版本的 vite 会在服务启动前对依赖预构建，统一放在 node_modules/.vite/deps
+// https://cn.vitejs.dev/guide/dep-pre-bundling.html
+// jvite 是简化版的实现方式
 app.use(async (ctx, next) => {
     // 此处不可通过 ctx.path.endsWith('.js') 判断，
     // 因为 App.vue?type=template 请求也会被解析为 js，
