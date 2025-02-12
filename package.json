@@ -18,7 +18,7 @@
   "private": true,
   "dependencies": {
     "@vue/compiler-sfc": "^3.3.13",
-    "koa": "^2.14.2",
+    "koa": "^2.15.4",
     "vue": "^3.3.13",
     "yaml": "^2.3.4"
   },
