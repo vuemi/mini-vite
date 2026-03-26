@@ -20,7 +20,7 @@
     "@vue/compiler-sfc": "^3.3.13",
     "koa": "^2.15.4",
     "vue": "^3.3.13",
-    "yaml": "^2.3.4"
+    "yaml": "^2.8.3"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
